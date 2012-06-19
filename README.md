@@ -21,7 +21,6 @@ Create an object extending `Formatter` with some configuration:
     object MyFormatter extends Formatter {
         val Width = 120
         val MaxStackLength = 40
-
     }
 
 You then use it as follows:
@@ -40,6 +39,11 @@ application-specific location information:
         override def getThrowableMessage(throwable: Throwable) = ...
         override def getAllLocationData(t: Throwable) = ...
     }
+
+How do I build it?
+------------------
+
+    mvn install
 
 Other things I need to know?
 ----------------------------
