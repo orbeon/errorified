@@ -48,7 +48,7 @@ How do I build it?
 Other things I need to know?
 ----------------------------
 
-- it's written in Scala
+- it's written in Scala (tested with 2.9.2)
 - it's released under the MIT license
 
 ---
