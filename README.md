@@ -6,9 +6,10 @@ What does it do?
 
 It takes a Java Throwable, and:
 
-- navigates all nested exceptions
+- navigates all nested exceptions, including for exceptions which don't support Java 1.4's `getCause()`
 - finds application-specific location information
-- neatly combines stack traces
+- neatly combines the common sections of nested stack traces
+- can remove stack entries in the middle of a trace when a maximum of entries is reached
 - formats everything into something you can output in your log file
 
 How do I use it?
