@@ -16,14 +16,21 @@ trait Formatter {
     private lazy val InnerHr = withBorder("-" * (Width - 2))
     private lazy val DottedHr = withBorder("---8<-----" * ((Width - 2 + 9) / 10), Width)
 
+    // Return the top-level error message or a default message
+    def message(throwable: Throwable) =
+        messageOrDefault(Exceptions.causesIterator(throwable) map (Error(_)) toList)
+
+    private def messageOrDefault(errors: Seq[Error]) =
+        errors.reverse collectFirst { case Error(_, Some(message), _, _) ⇒ message } getOrElse "[No error message provided.]"
+
     // Nicely format an exception into a String printable in a log file
     def format(throwable: Throwable): String = {
 
         // All nested errors from caused to cause
         val errors = Exceptions.causesIterator(throwable) map (Error(_)) toList
 
-        // Top-level message
-        val message = errors.last.message getOrElse "[No error message provided.]"
+        // Root message
+        val message = messageOrDefault(errors)
 
         val firstThrowableWithLocation = errors find (_.location.nonEmpty)
         val locations = firstThrowableWithLocation.toList flatMap (_.location)
