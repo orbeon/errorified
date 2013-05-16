@@ -25,7 +25,7 @@ object Exceptions {
                 val result = method.invoke(t)
                 Option(result.asInstanceOf[Throwable])
             } catch {
-                case _ ⇒ None
+                case _: Throwable ⇒ None
             }
 
         // Try to find a match
@@ -54,6 +54,7 @@ object Exceptions {
         "orbeon.apache.xml.utils.WrappedRuntimeException"       → "getException",
         "org.iso_relax.verifier.VerifierConfigurationException" → "getCauseException",
         "com.drew.lang.CompoundException"                       → "getInnerException",
+        "com.lowagie.text.ExceptionConverter"                   → "getException",
         "java.lang.Throwable"                                   → "getCause"
     )
 }
