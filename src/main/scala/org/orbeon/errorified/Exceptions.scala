@@ -43,7 +43,7 @@ object Exceptions {
 
     // Get the root cause of the throwable
     def getRootThrowable(t: Throwable): Throwable =
-        causesIterator(t).toList.lastOption.orNull
+        causesIterator(t).toList.last
 
     val Getters = Seq(
         "javax.xml.transform.TransformerException"              → "getException",

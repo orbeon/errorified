@@ -109,10 +109,10 @@ trait Formatter {
 
         // Format as string
         def formatted(width: Int) = {
-            val fixed = paddedInt(line, 4) :: paddedInt(col, 4) :: padded(description, 50) :: Nil
-            val remainder = (fixed.foldLeft(0)(_ + _.size)) + fixed.size + 2
+            val fixed     = padded(description, 30) :: paddedInt(line, 4) :: Nil // paddedInt(col, 4) ::
+            val remainder = (fixed map (_.size) sum) + fixed.size + 2
 
-            ("" :: padded(Some(file), width - remainder) :: fixed ::: "" :: Nil) mkString "|"
+            "" :: padded(Some(file), width - remainder, alignRight = true) :: fixed ::: "" :: Nil mkString "|"
         }
     }
 
@@ -120,10 +120,10 @@ trait Formatter {
     private case class JavaStackEntry(className: String, method: String, file: Option[String], line: Option[Int]) {
         // Format as string
         def formatted(width: Int) = {
-            val fixed = padded(Option(method), 30) :: padded(file, 30) :: paddedInt(line, 4) :: Nil
-            val remainder = (fixed.foldLeft(0)(_ + _.size)) + fixed.size + 2
+            val fixed     = padded(Option(method), 30) :: padded(file, 30) :: paddedInt(line, 4) :: Nil
+            val remainder = (fixed map (_.size) sum) + fixed.size + 2
 
-            ("" :: padded(Some(className), width - remainder) :: fixed ::: "" :: Nil) mkString "|"
+            "" :: padded(Some(className), width - remainder, alignRight = true) :: fixed ::: "" :: Nil mkString "|"
         }
     }
 
@@ -147,6 +147,15 @@ trait Formatter {
 
     private def withBorder(s: String, width: Int): String = s split "\n" map (line ⇒ withBorder(padded(Some(line), width - 2))) mkString "\n"
     private def withBorder(s: String): String = '|' + s + '|'
-    private def padded(s: Option[String], len: Int): String = s.getOrElse("").padTo(len, ' ').substring(0, len)
     private def paddedInt(i: Option[Int], len: Int): String = padded(Some(i.getOrElse("").toString.reverse), len).reverse
+
+    private def padded(s: Option[String], len: Int, alignRight: Boolean = false): String = {
+        val t = s.getOrElse("")
+        if (t.size <= len)
+            t.padTo(len, ' ')
+        else if (alignRight)
+            t.substring(t.size - len, t.size)
+        else
+            t.substring(0, len)
+    }
 }
