@@ -12,13 +12,14 @@ trait Formatter {
     def getThrowableMessage(t: Throwable): Option[String] = Option(t.getMessage)
     def getAllLocationData(t: Throwable): List[SourceLocation] = Nil
 
-    private lazy val OuterHr = '+' + "-" * (Width - 2) + '+'
-    private lazy val InnerHr = withBorder("-" * (Width - 2))
-    private lazy val DottedHr = withBorder("---8<-----" * ((Width - 2 + 9) / 10), Width)
+    private lazy val OuterHr      = '+' + "-" * (Width - 2) + '+'
+    private lazy val InnerHr      = withBorder("-" * (Width - 2))
+    private lazy val InnerHrLight = withBorder("·" * (Width - 2))
+    private lazy val ScissorsHr   = withBorder("---8<-----" * ((Width - 2 + 9) / 10), Width)
 
     // Return the top-level error message or a default message
     def message(throwable: Throwable) =
-        messageOrDefault(Exceptions.causesIterator(throwable) map (Error(_)) toList)
+        messageOrDefault(Exceptions.causesIterator(throwable) map Error.apply toList)
 
     private def messageOrDefault(errors: Seq[Error]) =
         errors.reverse collectFirst { case Error(_, Some(message), _, _) ⇒ message } getOrElse "[No error message provided.]"
@@ -27,7 +28,7 @@ trait Formatter {
     def format(throwable: Throwable): String = {
 
         // All nested errors from caused to cause
-        val errors = Exceptions.causesIterator(throwable) map (Error(_)) toList
+        val errors = Exceptions.causesIterator(throwable) map Error.apply toList
 
         // Root message
         val message = messageOrDefault(errors)
@@ -53,7 +54,7 @@ trait Formatter {
                 if (trace.size <= max + max / 10) // give it 10% tolerance
                     trace
                 else
-                    (trace take max / 2) ::: List(DottedHr) ::: (trace takeRight max / 2)
+                    (trace take max / 2) ::: List(ScissorsHr) ::: (trace takeRight max / 2)
 
             def nextTraces(causedTrace: Option[List[String]], rest: List[Error]): List[String] = rest headOption match {
                 case Some(error) ⇒
@@ -80,7 +81,7 @@ trait Formatter {
             InnerHr ::
             withBorder("Application Call Stack", Width) ::
             InnerHr ::
-            (locations map (_.formatted(Width))) :::
+            (locations flatMap (_.formatted(Width))) :::
             allFormattedJavaTraces :::
             OuterHr ::
             Nil
@@ -95,10 +96,12 @@ trait Formatter {
         // Create from Throwable
         def apply(throwable: Throwable): Error =
             Error(throwable.getClass.getName,
-                getThrowableMessage(throwable) filter (! isBlank(_)),
+                getThrowableMessage(throwable) filterNot isBlank,
                 getAllLocationData(throwable),
-                throwable.getStackTrace.reverseIterator map (JavaStackEntry(_)) toList)
+                throwable.getStackTrace.reverseIterator map JavaStackEntry.apply toList)
     }
+
+    private def remainder(l: List[String]) = (l map (_.size) sum) + l.size + 2
 
     // A source location in a file
     case class SourceLocation(file: String, line: Option[Int], col: Option[Int], description: Option[String], params: List[(String, String)]) {
@@ -108,11 +111,28 @@ trait Formatter {
         def key = file + '-' + line + '-' + line
 
         // Format as string
-        def formatted(width: Int) = {
-            val fixed     = padded(description, 30) :: paddedInt(line, 4) :: Nil // paddedInt(col, 4) ::
-            val remainder = (fixed map (_.size) sum) + fixed.size + 2
+        def formatted(width: Int): List[String] = {
 
-            "" :: padded(Some(file), width - remainder, alignRight = true) :: fixed ::: "" :: Nil mkString "|"
+            def formattedParams =
+                if (params.nonEmpty) {
+                    val maxParamNameSize = params collect { case (name, _) ⇒ name.size } max
+
+                    def formattedParam = params flatMap { case (name, value) ⇒
+                        val fixed = padded(Some(name), maxParamNameSize)
+
+                        List(withBorder(fixed + '=' + padded(Some(value), width - remainder(List(fixed)))))
+                    }
+
+                    InnerHrLight :: formattedParam ::: InnerHr :: Nil
+                } else
+                    Nil
+
+            val fixed = padded(description, 30) :: paddedInt(line, 4) :: Nil // NOTE: don't put column info as rarely useful
+
+            def location =
+                "" :: padded(Some(file), width - remainder(fixed), alignRight = true) :: fixed ::: "" :: Nil mkString "|"
+
+            location :: formattedParams
         }
     }
 
@@ -120,10 +140,9 @@ trait Formatter {
     private case class JavaStackEntry(className: String, method: String, file: Option[String], line: Option[Int]) {
         // Format as string
         def formatted(width: Int) = {
-            val fixed     = padded(Option(method), 30) :: padded(file, 30) :: paddedInt(line, 4) :: Nil
-            val remainder = (fixed map (_.size) sum) + fixed.size + 2
+            val fixed = padded(Option(method), 30) :: padded(file, 30) :: paddedInt(line, 4) :: Nil
 
-            "" :: padded(Some(className), width - remainder, alignRight = true) :: fixed ::: "" :: Nil mkString "|"
+            "" :: padded(Some(className), width - remainder(fixed), alignRight = true) :: fixed ::: "" :: Nil mkString "|"
         }
     }
 

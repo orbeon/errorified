@@ -39,7 +39,7 @@ object Exceptions {
 
     // Iterator down a throwable's causes
     def causesIterator(t: Throwable): Iterator[Throwable] =
-        Iterator.iterate(t)(getNestedThrowableOrNull(_)).takeWhile(_ ne null)
+        Iterator.iterate(t)(getNestedThrowableOrNull).takeWhile(_ ne null)
 
     // Get the root cause of the throwable
     def getRootThrowable(t: Throwable): Throwable =
