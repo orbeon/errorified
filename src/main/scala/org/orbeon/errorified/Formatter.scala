@@ -77,7 +77,7 @@ trait Formatter {
             OuterHr ::
             withBorder("An Error has Occurred", Width) ::
             InnerHr ::
-            withBorder(message, Width) ::
+            withBorder(wrap(message, Width - 2), Width) ::
             InnerHr ::
             withBorder("Application Call Stack", Width) ::
             InnerHr ::
@@ -87,6 +87,13 @@ trait Formatter {
             Nil
 
         "\n" + (lines mkString "\n")
+    }
+
+    def wrap(s: String, width: Int) = {
+        def truncate(s: String) = s take width
+        val restIterator = Iterator.iterate(s)(_ drop width) takeWhile (_.nonEmpty)
+
+        restIterator map truncate mkString "\n"
     }
 
     // An error (throwable) with optional message, location and trace
