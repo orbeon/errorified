@@ -2,7 +2,7 @@
 package org.orbeon.errorified
 
 // Exceptions utilities
-// Uses reflection to find nested causes when exceptions don't support Java's getCuase
+// Uses reflection to find nested causes when exceptions don't support Java's getCause
 object Exceptions {
 
     // Returns the exception directly nested
