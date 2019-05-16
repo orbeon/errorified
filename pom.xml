@@ -15,10 +15,10 @@
   </licenses>
 
   <properties>
-    <maven.compiler.source>1.5</maven.compiler.source>
-    <maven.compiler.target>1.5</maven.compiler.target>
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <encoding>UTF-8</encoding>
-    <scala.version>2.11.6</scala.version>
+    <scala.version>2.12.8</scala.version>
   </properties>
 
   <dependencies>
@@ -50,7 +50,7 @@
       <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>3.3.1</version>
 	<configuration>
 	  <recompileMode>incremental</recompileMode>
 	</configuration>
@@ -66,7 +66,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12</version>
+        <version>2.20.1</version>
         <configuration>
           <useFile>false</useFile>
           <disableXmlReport>true</disableXmlReport>
